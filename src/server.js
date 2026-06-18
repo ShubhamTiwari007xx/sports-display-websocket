@@ -11,8 +11,6 @@ const HOST = process.env.HOST || '0.0.0.0'
 
 app.use(express.json())
 
-
-
 app.get('/', (req, res)=>{
     res.send('helloo from express')
 });

@@ -7,7 +7,7 @@ function sendJson(socket, payload) {
 
 function broadcast(wss, payload) {
     for (const client of wss.clients) {
-        if (client.readyState !== WebSocket.OPEN) return // also see note below!
+        if (client.readyState !== WebSocket.OPEN) continue // also see note below!
         client.send(JSON.stringify(payload));
     }
 }
@@ -19,12 +19,12 @@ export function attachServer(server) {
         maxPayload: 1024 * 1024,
     })
 
-    wss.on('connection',async (socket) => {
-        if(Arcjet){
+    wss.on('connection',async (socket, req) => {
+        if(wsArcjet){
             try{
-                const decision = await Arcjet.protect(req);
+                const decision = await wsArcjet.protect(req);
                 if(decision.isDenied()){
-                    const code = decision.reason.isRateLimit() ? 1013 : 1080;
+                    const code = decision.reason.isRateLimit() ? 1013 : 1008;
                     const reason = decision.reason.isRateLimit() ? 'rate limited' : 'access denied'
 
                     socket.close(code,reason);
