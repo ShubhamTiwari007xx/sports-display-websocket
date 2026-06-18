@@ -3,46 +3,45 @@ import { createMatchSchema, listMatchesQuerySchema } from '../src/validation/mat
 import { db } from '../src/db.js'
 import { matches } from '../src/schema.js'
 import { getMatchStatus } from '../src/utils/match-status.js'
-import { parse } from 'dotenv'
-import { de } from 'zod/locales'
 import { desc } from 'drizzle-orm'
 
 const matchRouter = Router()
 const Max_LIMIT = 100
-matchRouter.get('/', async(req, res) => {
+
+matchRouter.get('/', async (req, res) => {
     const parsed = listMatchesQuerySchema.safeParse(req.query)
 
-    if(!parsed.success){
-        res.status(400).json({err: 'invalid ' ,details : parse.error})
+    if (!parsed.success) {
+        return res.status(400).json({ err: 'invalid', details: parsed.error.issues })
     }
 
-    const limit = Math.min(parsed.data.limit ?? 50 , Max_LIMIT)
+    const limit = Math.min(parsed.data.limit ?? 50, Max_LIMIT)
 
-    try{
+    try {
         const data = await db
-          .select()
-          .from(matches)
-          .orderBy((desc(matches.createdAt)))
-          .limit(limit)
+            .select()
+            .from(matches)
+            .orderBy(desc(matches.createdAt))
+            .limit(limit)
 
-          res.json({data})
-    }catch(err){
-        res.status(500).json({err: 'failed '})
+        res.json({ data })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ err: 'failed' })
     }
- })
+})
 
 matchRouter.post('/', async (req, res) => {
     const parsed = createMatchSchema.safeParse(req.body)
-   
-  
-    console.log('body:', req.body)         
-    console.log('parsed:', parsed)          
+
+    console.log('body:', req.body)
+    console.log('parsed:', parsed)
 
     if (!parsed.success) {
-        return res.status(400).json({ error: 'invalid payload', issues: parsed.error.issues }) //  zod errors
+        return res.status(400).json({ error: 'invalid payload', issues: parsed.error.issues })
     }
 
-  const { data: { startTime, endTime, homeScore, awayScore }} = parsed
+    const { data: { startTime, endTime, homeScore, awayScore } } = parsed
 
     try {
         const [event] = await db
@@ -50,12 +49,16 @@ matchRouter.post('/', async (req, res) => {
             .values({
                 ...parsed.data,
                 startTime: new Date(startTime),
-                endTime : new Date(endTime), 
-                homeScore: homeScore ?? 0 ,
-                awayScore : awayScore ?? 0,
-                status: getMatchStatus(startTime, endTime) 
+                endTime: new Date(endTime),
+                homeScore: homeScore ?? 0,
+                awayScore: awayScore ?? 0,
+                status: getMatchStatus(startTime, endTime)
             })
             .returning()
+
+        if (res.app.locals.broadcastMatchCreated) {
+            res.app.locals.broadcastMatchCreated(event)
+        }
 
         res.status(201).json({ data: event })
     } catch (err) {

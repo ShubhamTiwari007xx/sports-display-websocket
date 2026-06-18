@@ -1,18 +1,31 @@
 import express, { Router } from "express"
+import http from 'http'
 import  matchRouter  from '../routes/matches.js'
+import { attachServer } from "../ws/file.js"
+import { url } from "inspector"
 const app = express()
-const port = 8000
+const server = http.createServer(app)
+const PORT = process.env.PORT || 8000
+const HOST = process.env.HOST || '0.0.0.0'
+
 app.use(express.json())
+
+
 
 app.get('/', (req, res)=>{
     res.send('helloo from express')
-})
+});
+
 
 app.use('/matches',matchRouter)
 
+const { broadcastMatchCreated } = attachServer(server);
+app.locals.broadcastMatchCreated = broadcastMatchCreated
 
-app.listen(port, ()=>{
-    console.log(`server is listening to http://localhost:${port}`)
+server.listen(PORT,HOST, ()=>{
+    const BaseUrl = HOST === '0.0.0.0' ? `http://localhost:${PORT}` :  `http://${HOST}:${PORT}`
+    console.log(`server is listening to ${BaseUrl}`)
+    console.log( `websocket server is running on ${BaseUrl.replace('http', 'ws')}/ws`)
 })
 
 
