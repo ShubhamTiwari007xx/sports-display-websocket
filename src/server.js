@@ -3,6 +3,7 @@ import http from 'http'
 import  matchRouter  from '../routes/matches.js'
 import { attachServer } from "../ws/file.js"
 import { url } from "inspector"
+import { securityMiddleware } from "./arcjet.js"
 const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 8000
@@ -17,6 +18,7 @@ app.get('/', (req, res)=>{
 });
 
 
+app.use(securityMiddleware())
 app.use('/matches',matchRouter)
 
 const { broadcastMatchCreated } = attachServer(server);
