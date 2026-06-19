@@ -1,3 +1,4 @@
+import express from 'express';
 import { Router } from 'express'
 import { createMatchSchema, listMatchesQuerySchema } from '../src/validation/matches.js'
 import { db } from '../src/db.js'

@@ -4,6 +4,7 @@ import  matchRouter  from '../routes/matches.js'
 import { attachServer } from "../ws/file.js"
 import { url } from "inspector"
 import { securityMiddleware } from "./arcjet.js"
+import commentaryRouter from "../routes/commentary.js"
 const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 8000
@@ -20,6 +21,7 @@ app.get('/', (req, res)=>{
 
 app.use(securityMiddleware())
 app.use('/matches',matchRouter)
+app.use('/matches/:id/commentary',commentaryRouter)
 
 const { broadcastMatchCreated } = attachServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated
@@ -29,5 +31,6 @@ server.listen(PORT,HOST, ()=>{
     console.log(`server is listening to ${BaseUrl}`)
     console.log( `websocket server is running on ${BaseUrl.replace('http', 'ws')}/ws`)
 })
+
 
 

@@ -20,9 +20,9 @@ export function attachServer(server) {
     })
 
     wss.on('connection',async (socket) => {
-        if(Arcjet){
+        if(wsArcjet){
             try{
-                const decision = await Arcjet.protect(req);
+                const decision = await wsArcjet.protect(req);
                 if(decision.isDenied()){
                     const code = decision.reason.isRateLimit() ? 1013 : 1080;
                     const reason = decision.reason.isRateLimit() ? 'rate limited' : 'access denied'
