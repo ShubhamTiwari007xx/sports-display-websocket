@@ -146,7 +146,8 @@ export function attachServer(server) {
 
         if (wsArcjet) {
             try {
-                const decision = await wsArcjet.protect(req)
+                const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || socket.remoteAddress
+                const decision = await wsArcjet.protect(req, { ip })
                 if (decision.isDenied()) {
                     const code = decision.reason.isRateLimit() ? 1013 : 1080
                     const reason = decision.reason.isRateLimit() ? 'rate limited' : 'access denied'
