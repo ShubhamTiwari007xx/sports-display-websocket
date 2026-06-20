@@ -1,4 +1,4 @@
-import  AgentApi  from "apminsight" 
+import AgentApi from "apminsight" 
 AgentApi.config();
 
 import express, { Router } from "express"
