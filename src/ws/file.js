@@ -2,6 +2,7 @@ import { WebSocket, WebSocketServer } from "ws"
 import { wsArcjet } from "../arcjet.js"
 
 const matchSubscribers = new Map()
+const MAX_SUBSCRIPTIONS = 50
 
 function subscribe(matchId, socket) {
     if (!matchSubscribers.has(matchId)) {
@@ -13,7 +14,6 @@ function subscribe(matchId, socket) {
 
 function unsubscribe(matchId, socket) {
     const subscribers = matchSubscribers.get(matchId)
-
     if (!subscribers) return
 
     subscribers.delete(socket)
@@ -44,7 +44,15 @@ function broadcast(wss, payload) {
     }
 }
 
+
+
 function getMatchId(value) {
+    if (typeof value !== 'number' && typeof value !== 'string') {
+        return null
+    }
+    if (typeof value === 'string' && value.trim() === '') {
+        return null
+    }
     const matchId = Number(value)
     return Number.isInteger(matchId) ? matchId : null
 }
@@ -59,13 +67,31 @@ function handleMessage(socket, data) {
         return
     }
 
+    if (!message || typeof message !== 'object' || Array.isArray(message)) {
+        sendJson(socket, { type: 'error', message: 'invalid message structure' })
+        return
+    }
+
+    if (typeof message.matchId !== 'string' && typeof message.matchId !== 'number') {
+        sendJson(socket, { type: 'error', message: 'invalid or missing matchId' })
+        return
+    }
+
     const matchId = getMatchId(message.matchId)
     if (matchId === null) {
-        sendJson(socket, { type: 'error', message: 'invalid matchId' })
+        sendJson(socket, { type: 'error', message: 'invalid matchId value' })
         return
     }
 
     if (message.type === 'subscribe') {
+        if (socket.subscriptions.has(matchId)) {
+            sendJson(socket, { type: 'error', message: 'already subscribed to this match' })
+            return
+        }
+        if (socket.subscriptions.size >= MAX_SUBSCRIPTIONS) {
+            sendJson(socket, { type: 'error', message: 'subscription limit reached' })
+            return
+        }
         subscribe(matchId, socket)
         socket.subscriptions.add(matchId)
         sendJson(socket, { type: 'subscribed', matchId })
@@ -102,7 +128,16 @@ export function attachServer(server) {
     })
 
     server.on('upgrade', async (req, socket, head) => {
-        const { pathname } = new URL(req.url, `http://${req.headers.host}`)
+        let pathname
+        try {
+            const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+            pathname = parsedUrl.pathname
+        } catch (err) {
+            console.error('WebSocket upgrade URL parsing failed:', err)
+            socket.write('HTTP/1.1 400 Bad Request\r\n\r\n')
+            socket.destroy()
+            return
+        }
 
         if (pathname !== '/ws') {
             socket.destroy()

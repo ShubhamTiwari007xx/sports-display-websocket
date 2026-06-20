@@ -2,8 +2,16 @@ import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/node";
 const arcjetKey = process.env.ARCJET_KEY;
 const arcjetMode = process.env.ARCJET_MODE === 'DRY_RUN' ? 'DRY_RUN' : 'LIVE'
 
+const isProduction = process.env.NODE_ENV === 'production' || process.env.ARCJET_ENV === 'production'
+const allowFailOpen = process.env.ARCJET_ALLOW_FAIL_OPEN === 'true'
+
 if (!arcjetKey) {
-    console.warn("ARCJET_KEY env is missing; Arcjet protection is disabled")
+    if (isProduction && !allowFailOpen) {
+        console.error("CRITICAL ERROR: ARCJET_KEY environment variable is missing in production. Application shutting down.")
+        process.exit(1)
+    } else {
+        console.warn("ARCJET_KEY environment variable is missing; Arcjet protection is disabled.")
+    }
 }
 
 export const httpArcjet = arcjetKey ?
