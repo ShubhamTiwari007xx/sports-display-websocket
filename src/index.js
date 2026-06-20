@@ -1,5 +1,10 @@
+import 'dotenv/config';
 import AgentApi from "apminsight" 
-AgentApi.config();
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.APMINSIGHT_ENABLED === 'true';
+if (isProduction) {
+    AgentApi.config();
+}
 
 import express, { Router } from "express"
 import http from 'http'
