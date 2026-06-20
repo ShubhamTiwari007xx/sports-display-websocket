@@ -1,7 +1,7 @@
 import express, { Router } from "express"
 import http from 'http'
 import  matchRouter  from '../routes/matches.js'
-import { attachServer } from "../ws/file.js"
+import { attachServer } from "./ws/file.js"
 import { url } from "inspector"
 import { securityMiddleware } from "./arcjet.js"
 import commentaryRouter from "../routes/commentary.js"
@@ -23,8 +23,9 @@ app.use(securityMiddleware())
 app.use('/matches',matchRouter)
 app.use('/matches/:id/commentary',commentaryRouter)
 
-const { broadcastMatchCreated } = attachServer(server);
+const { broadcastMatchCreated, broadcastCommentary } = attachServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated
+app.locals.broadcastCommentary = broadcastCommentary
 
 server.listen(PORT,HOST, ()=>{
     const BaseUrl = HOST === '0.0.0.0' ? `http://localhost:${PORT}` :  `http://${HOST}:${PORT}`

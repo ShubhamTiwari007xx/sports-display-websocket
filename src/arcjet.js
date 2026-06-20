@@ -3,7 +3,7 @@ const arcjetKey = process.env.ARCJET_KEY;
 const arcjetMode = process.env.ARCJET_MODE === 'DRY_RUN' ? 'DRY_RUN' : 'LIVE'
 
 if (!arcjetKey) {
-    throw new errorMonitor("ARCJECT_KEY env is missing")
+    console.warn("ARCJET_KEY env is missing; Arcjet protection is disabled")
 }
 
 export const httpArcjet = arcjetKey ?
