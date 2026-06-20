@@ -6,9 +6,9 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon src/index.js",
     "demo:crud": "node src/crud-demo.js",
-    "start": "node src/server.js",
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
