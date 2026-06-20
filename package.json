@@ -9,7 +9,8 @@
     "dev": "nodemon src/index.js",
     "demo:crud": "node src/crud-demo.js",
     "start": "node -e \"const fs=require('fs'); console.log('CWD:', process.cwd()); console.log('ROOT_FILES:', fs.readdirSync('.')); if (fs.existsSync('src')) console.log('SRC_FILES:', fs.readdirSync('src')); else console.log('SRC_DIR_MISSING');\" && node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed":"node src/seed/seed.js"
   },
   "keywords": [],
   "author": "",

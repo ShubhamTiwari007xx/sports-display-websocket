@@ -22,7 +22,6 @@ app.get('/', (req, res)=>{
 });
 
 
-app.use(securityMiddleware())
 app.use('/matches',matchRouter)
 app.use('/matches/:id/commentary',commentaryRouter)
 

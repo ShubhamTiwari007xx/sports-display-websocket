@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "apminsightdata/*",
+    "node_modules/*",
+    ".git/*"
+  ]
+}
